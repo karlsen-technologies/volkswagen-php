@@ -132,7 +132,13 @@ class WeConnectClient
             $vehicle = $vehicle->vin;
         }
 
-        if (is_null($domains)) {
+        if (! is_null($domains)) {
+            foreach ($domains as $key => $domain) {
+                if ($domain instanceof StatusDomain) {
+                    $domains[$key] = $domain->value;
+                }
+            }
+        } else {
             $domains = StatusDomain::values();
         }
 
