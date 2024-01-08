@@ -1,0 +1,23 @@
+{
+    "name": "karlsen-technologies/volkswagen-php",
+    "description": "Unofficial PHP package for using the WeConnect API",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Thomas Andre Karlsen",
+            "email": "thomas@kartech.no"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"kartech\\Volkswagen\\": "src/"}
+    },
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.0",
+        "ext-dom": "*"
+    },
+    "require-dev": {
+        "spatie/ray": "^1.39"
+    }
+}
