@@ -1,6 +1,6 @@
 <?php
 
-namespace kartech\Volkswagen\DataObjects\Api;
+namespace KarlsenTechnologies\Volkswagen\DataObjects\Api;
 
 class AuthenticationRedirect
 {

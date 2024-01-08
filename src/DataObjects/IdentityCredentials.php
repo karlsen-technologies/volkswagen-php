@@ -1,6 +1,6 @@
 <?php
 
-namespace kartech\Volkswagen\DataObjects;
+namespace KarlsenTechnologies\Volkswagen\DataObjects;
 
 class IdentityCredentials
 {

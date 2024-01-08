@@ -1,8 +1,8 @@
 <?php
 
-namespace kartech\Volkswagen\DataObjects\Vehicle\Status;
+namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
-use kartech\Volkswagen\Enums\Vehicle\StatusDomain;
+use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
 
 class Domain
 {

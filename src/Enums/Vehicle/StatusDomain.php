@@ -1,6 +1,6 @@
 <?php
 
-namespace kartech\Volkswagen\Enums\Vehicle;
+namespace KarlsenTechnologies\Volkswagen\Enums\Vehicle;
 
 enum StatusDomain: string
 {

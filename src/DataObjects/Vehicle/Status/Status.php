@@ -1,6 +1,6 @@
 <?php
 
-namespace kartech\Volkswagen\DataObjects\Vehicle\Status;
+namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
 class Status
 {

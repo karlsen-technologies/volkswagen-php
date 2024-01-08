@@ -1,9 +1,9 @@
 <?php
 
-namespace kartech\Volkswagen;
+namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
-use kartech\Volkswagen\DataObjects\Api\AuthenticationRedirect;
+use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
 
 class CariadClient
 {

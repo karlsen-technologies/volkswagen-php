@@ -1,6 +1,6 @@
 <?php
 
-namespace kartech\Volkswagen\DataObjects\Vehicle;
+namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle;
 
 class VehicleCapability
 {

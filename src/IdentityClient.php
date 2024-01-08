@@ -1,13 +1,13 @@
 <?php
 
-namespace kartech\Volkswagen;
+namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\BadResponseException;
-use kartech\Volkswagen\DataObjects\Api\AuthenticationForm;
-use kartech\Volkswagen\DataObjects\Api\AuthenticationRedirect;
-use kartech\Volkswagen\DataObjects\IdentityCredentials;
+use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationForm;
+use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
+use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
 
 class IdentityClient
 {

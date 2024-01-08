@@ -1,13 +1,13 @@
 <?php
 
-namespace kartech\Volkswagen;
+namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
-use kartech\Volkswagen\DataObjects\IdentityCredentials;
-use kartech\Volkswagen\DataObjects\Vehicle\Status\Domain;
-use kartech\Volkswagen\DataObjects\Vehicle\Vehicle;
-use kartech\Volkswagen\DataObjects\WeConnectCredentials;
-use kartech\Volkswagen\Enums\Vehicle\StatusDomain;
+use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
+use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status\Domain;
+use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
+use KarlsenTechnologies\Volkswagen\DataObjects\WeConnectCredentials;
+use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
 
 class WeConnectClient
 {

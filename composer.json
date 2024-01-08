@@ -10,7 +10,7 @@
         }
     ],
     "autoload": {
-        "psr-4": {"kartech\\Volkswagen\\": "src/"}
+        "psr-4": {"KarlsenTechnologies\\Volkswagen\\": "src/"}
     },
     "require": {
         "php": "^8.2",
