@@ -12,12 +12,18 @@
     "autoload": {
         "psr-4": {"KarlsenTechnologies\\Volkswagen\\": "src/"}
     },
+    "scripts": {
+        "format": "./vendor/bin/pint",
+        "lint": "./vendor/bin/pint --test",
+        "analyse": "./vendor/bin/phpstan analyse --ansi"
+    },
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.0",
         "ext-dom": "*"
     },
     "require-dev": {
-        "spatie/ray": "^1.39"
+        "spatie/ray": "^1.39",
+        "laravel/pint": "^1.13"
     }
 }
