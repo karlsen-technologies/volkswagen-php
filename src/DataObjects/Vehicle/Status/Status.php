@@ -8,6 +8,7 @@ class Status
         public string $name,
         public ?string $carCapturedTimestamp,
         public array $values = [],
+        public array $requests = [],
     ) {
     }
 
@@ -18,28 +19,49 @@ class Status
 
         unset($values['carCapturedTimestamp']);
 
+        $requests = $data['requests'] ?? [];
+
+        foreach ($requests as $key => $requestData) {
+            $requests[$key] = StatusRequest::fromApi($requestData);
+        }
+
         return new Status(
             $name,
             $carCapturedTimestamp,
             $values,
+            $requests,
         );
     }
 
     static function fromArray(array $data): Status
     {
+        $requests = [];
+
+        foreach ($data['requests'] as $requestData) {
+            $requests[] = StatusRequest::fromArray($requestData);
+        }
+
         return new Status(
             $data['name'],
             $data['carCapturedTimestamp'],
             $data['values'],
+            $requests,
         );
     }
 
     public function toArray(): array
     {
+        $requests = [];
+
+        foreach ($this->requests as $requestData) {
+            $requests[] = $requestData->toArray();
+        }
+
         return [
             'name' => $this->name,
             'carCapturedTimestamp' => $this->carCapturedTimestamp,
             'values' => $this->values,
+            'requests' => $requests,
         ];
     }
 }
