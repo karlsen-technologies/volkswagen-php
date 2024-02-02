@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
 use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
@@ -10,10 +12,9 @@ class Domain
         public ?StatusDomain $type,
         public string $rawType,
         public array $statuses = [],
-    ) {
-    }
+    ) {}
 
-    static function fromApi(string $name, array $data): Domain
+    public static function fromApi(string $name, array $data): Domain
     {
         $statuses = [];
 
@@ -32,7 +33,7 @@ class Domain
         );
     }
 
-    static function fromArray(array $data): Domain
+    public static function fromArray(array $data): Domain
     {
         $statuses = [];
 

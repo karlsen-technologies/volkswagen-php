@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Api;
 
 class AuthenticationForm
@@ -7,8 +9,7 @@ class AuthenticationForm
     public function __construct(
         public string $targetUrl,
         public array $parameters,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

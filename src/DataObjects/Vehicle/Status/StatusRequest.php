@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
 class StatusRequest
@@ -10,10 +12,9 @@ class StatusRequest
         public array $body,
         public string $requestId,
         public string $vcfRequestId,
-    ) {
-    }
+    ) {}
 
-    static function fromApi(array $data): StatusRequest
+    public static function fromApi(array $data): StatusRequest
     {
         $body = $data['body'] ?? [];
 
@@ -26,7 +27,7 @@ class StatusRequest
         );
     }
 
-    static function fromArray(array $data): StatusRequest
+    public static function fromArray(array $data): StatusRequest
     {
         return new StatusRequest(
             $data['status'],

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\Actions;
 
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status\Domain;
@@ -20,7 +22,7 @@ trait GetsVehicleStatus
             $vehicle = $vehicle->vin;
         }
 
-        if (! is_null($domains)) {
+        if ($domains !== null) {
             foreach ($domains as $key => $domain) {
                 if ($domain instanceof StatusDomain) {
                     $domains[$key] = $domain->value;
@@ -30,7 +32,7 @@ trait GetsVehicleStatus
             $domains = StatusDomain::values();
         }
 
-        $response = $this->httpClient->get("/vehicle/v1/vehicles/$vehicle/selectivestatus?jobs=" . implode(',', $domains));
+        $response = $this->httpClient->get("/vehicle/v1/vehicles/{$vehicle}/selectivestatus?jobs=" . implode(',', $domains));
 
         $responseContents = $response->getBody()->getContents();
 

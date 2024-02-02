@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle;
 
 class Vehicle
@@ -17,10 +19,9 @@ class Vehicle
         public array $coUsers,
         public string $devicePlatform,
         public array $tags,
-    ) {
-    }
+    ) {}
 
-    static function fromArray(array $data): Vehicle
+    public static function fromArray(array $data): Vehicle
     {
         $capabilities = [];
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
 class Status
@@ -9,10 +11,9 @@ class Status
         public ?string $carCapturedTimestamp,
         public array $values = [],
         public array $requests = [],
-    ) {
-    }
+    ) {}
 
-    static function fromApi(string $name, array $data): Status
+    public static function fromApi(string $name, array $data): Status
     {
         $values = $data['value'] ?? [];
         $carCapturedTimestamp = $values['carCapturedTimestamp'] ?? null;
@@ -33,7 +34,7 @@ class Status
         );
     }
 
-    static function fromArray(array $data): Status
+    public static function fromArray(array $data): Status
     {
         $requests = [];
 

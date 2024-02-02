@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
@@ -7,13 +9,13 @@ use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
 
 class CariadClient
 {
-
-    const BASE_URL = 'https://emea.bff.cariad.digital';
+    public const BASE_URL = 'https://emea.bff.cariad.digital';
 
     protected Client $client;
 
-    public function __construct() {
-        $this->client = new \GuzzleHttp\Client([
+    public function __construct()
+    {
+        $this->client = new Client([
             'base_uri' => self::BASE_URL,
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -26,7 +28,8 @@ class CariadClient
     {
         $rand64bit = strval(mt_rand() << 32 | mt_rand()) . strval(time());
 
-        $response = $this->client->get('/user-login/v1/authorize',
+        $response = $this->client->get(
+            '/user-login/v1/authorize',
             [
                 'query' => [
                     'redirect_uri' => 'weconnect://authenticated',

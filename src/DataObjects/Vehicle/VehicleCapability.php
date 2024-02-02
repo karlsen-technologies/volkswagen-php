@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle;
 
 class VehicleCapability
@@ -8,10 +10,9 @@ class VehicleCapability
         public string $id,
         public string $expirationDate,
         public bool $userDisablingAllowed,
-    ) {
-    }
+    ) {}
 
-    static function fromArray(array $data): VehicleCapability
+    public static function fromArray(array $data): VehicleCapability
     {
         return new VehicleCapability(
             $data['id'],

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
 class StatusError
@@ -11,10 +13,9 @@ class StatusError
         public ?int $code,
         public ?int $group,
         public ?bool $retry,
-    ) {
-    }
+    ) {}
 
-    static function fromApi(array $data): StatusError
+    public static function fromApi(array $data): StatusError
     {
         $values = $data['error'] ?? [];
 
@@ -35,7 +36,7 @@ class StatusError
         );
     }
 
-    static function fromArray(array $data): StatusError
+    public static function fromArray(array $data): StatusError
     {
         return new StatusError(
             $data['message'],

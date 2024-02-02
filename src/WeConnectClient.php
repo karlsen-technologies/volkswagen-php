@@ -1,18 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
-use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status\Domain;
-use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
 use KarlsenTechnologies\Volkswagen\DataObjects\WeConnectCredentials;
-use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
 
 class WeConnectClient
 {
-    use Actions\ListsVehicles,
-        Actions\GetsVehicleStatus;
+    use Actions\GetsVehicleStatus;
+    use Actions\ListsVehicles;
 
     protected ?WeConnectCredentials $credentials;
 
@@ -28,10 +27,11 @@ class WeConnectClient
         'Accept' => '*/*',
     ];
 
-    public function __construct(?WeConnectCredentials $credentials = null, string $baseUrl = 'https://emea.bff.cariad.digital', array $headers = []) {
+    public function __construct(?WeConnectCredentials $credentials = null, string $baseUrl = 'https://emea.bff.cariad.digital', array $headers = [])
+    {
         $this->credentials = $credentials;
 
-        if(! is_null($this->credentials)) {
+        if($this->credentials !== null) {
             $this->headers['Authorization'] = 'Bearer ' . $this->credentials->accessToken;
         }
 
@@ -47,7 +47,8 @@ class WeConnectClient
 
     public function login(IdentityCredentials $credentials): WeConnectCredentials
     {
-        $response = $this->httpClient->post('/user-login/login/v1',
+        $response = $this->httpClient->post(
+            '/user-login/login/v1',
             [
                 'json' => [
                     'state' => $credentials->state,
@@ -94,7 +95,8 @@ class WeConnectClient
 
     public function refreshCredentials(): WeConnectCredentials
     {
-        $response = $this->httpClient->get('/user-login/refresh/v1',
+        $response = $this->httpClient->get(
+            '/user-login/refresh/v1',
             [
                 'headers' => array_merge($this->headers, [
                     'Authorization' => 'Bearer ' . $this->credentials?->refreshToken,

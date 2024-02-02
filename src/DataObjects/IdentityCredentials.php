@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects;
 
 class IdentityCredentials
@@ -11,10 +13,9 @@ class IdentityCredentials
         public string $expiresIn,
         public string $tokenType,
         public string $idToken,
-    ) {
-    }
+    ) {}
 
-    static function fromArray(array $data): IdentityCredentials
+    public static function fromArray(array $data): IdentityCredentials
     {
         return new IdentityCredentials(
             $data['state'],

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\Actions;
 
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
@@ -22,8 +24,7 @@ trait ListsVehicles
 
         $vehicles = [];
 
-        foreach ($data['data'] as $vehicleData)
-        {
+        foreach ($data['data'] as $vehicleData) {
             $vehicles[] = Vehicle::fromArray($vehicleData);
         }
 

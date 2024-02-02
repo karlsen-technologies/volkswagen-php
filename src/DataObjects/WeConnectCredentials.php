@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen\DataObjects;
 
 class WeConnectCredentials
@@ -8,10 +10,9 @@ class WeConnectCredentials
         public string $accessToken,
         public string $refreshToken,
         public string $idToken,
-    ) {
-    }
+    ) {}
 
-    static function fromArray(array $data): WeConnectCredentials
+    public static function fromArray(array $data): WeConnectCredentials
     {
         return new WeConnectCredentials(
             $data['access_token'] ?? $data['accessToken'],

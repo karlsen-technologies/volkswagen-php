@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
@@ -8,6 +10,7 @@ use GuzzleHttp\Exception\BadResponseException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationForm;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
+use DOMDocument;
 
 class IdentityClient
 {
@@ -27,7 +30,8 @@ class IdentityClient
         'Accept' => '*/*',
     ];
 
-    public function __construct(string $baseUrl = 'https://identity.vwgroup.io', array $headers = [], ?CariadClient $cariadClient = null) {
+    public function __construct(string $baseUrl = 'https://identity.vwgroup.io', array $headers = [], ?CariadClient $cariadClient = null)
+    {
         $this->baseUrl = $baseUrl;
         $this->headers = array_merge($this->headers, $headers);
 
@@ -96,7 +100,7 @@ class IdentityClient
 
         $responseContents = $response->getBody()->getContents();
 
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
 
         $document->loadHTML($responseContents);
 
@@ -106,10 +110,10 @@ class IdentityClient
 
         $emailFormParameters = [];
 
-        foreach($loginForm->childNodes as $childNode)
-        {
-            if($childNode->nodeName !== 'input')
+        foreach($loginForm->childNodes as $childNode) {
+            if($childNode->nodeName !== 'input') {
                 continue;
+            }
 
             $emailFormParameters[$childNode->getAttribute('name')] = $childNode->getAttribute('value');
         }
@@ -119,7 +123,8 @@ class IdentityClient
 
     protected function submitEmailForm(AuthenticationForm $form): ?AuthenticationRedirect
     {
-        $response = $this->httpClient->post($form->targetUrl,
+        $response = $this->httpClient->post(
+            $form->targetUrl,
             [
                 'form_params' => $form->parameters,
                 'http_errors' => false,
@@ -143,7 +148,7 @@ class IdentityClient
 
         $responseContents = $response->getBody()->getContents();
 
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
 
         $document->loadHTML($responseContents);
 
@@ -151,8 +156,9 @@ class IdentityClient
         $csrfToken = null;
 
         foreach($document->getElementsByTagName('script') as $node) {
-            if(! str_contains($node->nodeValue, 'window._IDK ='))
+            if(! str_contains($node->nodeValue, 'window._IDK =')) {
                 continue;
+            }
 
             preg_match('/(?<=templateModel: ).*(?=,)/', $node->nodeValue, $matches);
             $templateModel = json_decode($matches[0], true);
@@ -174,7 +180,8 @@ class IdentityClient
     protected function submitPasswordForm(AuthenticationForm $form): ?AuthenticationRedirect
     {
         try {
-            $this->httpClient->post($form->targetUrl,
+            $this->httpClient->post(
+                $form->targetUrl,
                 [
                     'form_params' => $form->parameters,
                     'allow_redirects' => true,
