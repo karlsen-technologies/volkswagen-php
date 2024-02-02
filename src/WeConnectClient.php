@@ -11,6 +11,9 @@ use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
 
 class WeConnectClient
 {
+    use Actions\ListsVehicles,
+        Actions\GetsVehicleStatus;
+
     protected ?WeConnectCredentials $credentials;
 
     protected Client $httpClient;
@@ -106,54 +109,5 @@ class WeConnectClient
         $this->useCredentials(WeConnectCredentials::fromArray($data));
 
         return $this->credentials;
-    }
-
-    public function vehicles()
-    {
-        $response = $this->httpClient->get('/vehicle/v1/vehicles');
-
-        $responseContents = $response->getBody()->getContents();
-
-        $data = json_decode($responseContents, true);
-
-        $vehicles = [];
-
-        foreach ($data['data'] as $vehicleData)
-        {
-            $vehicles[] = Vehicle::fromArray($vehicleData);
-        }
-
-        return $vehicles;
-    }
-
-    public function vehicleStatus(Vehicle|string $vehicle, ?array $domains = null)
-    {
-        if ($vehicle instanceof Vehicle) {
-            $vehicle = $vehicle->vin;
-        }
-
-        if (! is_null($domains)) {
-            foreach ($domains as $key => $domain) {
-                if ($domain instanceof StatusDomain) {
-                    $domains[$key] = $domain->value;
-                }
-            }
-        } else {
-            $domains = StatusDomain::values();
-        }
-
-        $response = $this->httpClient->get("/vehicle/v1/vehicles/$vehicle/selectivestatus?jobs=" . implode(',', $domains));
-
-        $responseContents = $response->getBody()->getContents();
-
-        $data = json_decode($responseContents, true);
-
-        $domains = [];
-
-        foreach($data as $domainName => $domainData) {
-            $domains[$domainName] = Domain::fromApi($domainName, $domainData);
-        }
-
-        return $domains;
     }
 }
