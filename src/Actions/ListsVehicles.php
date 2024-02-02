@@ -14,7 +14,7 @@ use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
  */
 trait ListsVehicles
 {
-    public function vehicles()
+    public function vehicles(): array
     {
         $response = $this->httpClient->get('/vehicle/v1/vehicles');
 

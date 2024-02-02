@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen;
 
+use DOMElement;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationForm;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
 use DOMDocument;
+use Exception;
 
 class IdentityClient
 {
@@ -50,6 +53,10 @@ class IdentityClient
         $this->cariadClient = $cariadClient ?? new CariadClient();
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
     public function authorize(string $email, string $password): IdentityCredentials
     {
         // We start by getting the authentication url from Cariad.
@@ -83,7 +90,11 @@ class IdentityClient
         return $this->parseAppRedirect($appRedirect);
     }
 
-    protected function startAuthorization(AuthenticationRedirect $redirect): ?AuthenticationRedirect
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    protected function startAuthorization(AuthenticationRedirect $redirect): AuthenticationRedirect
     {
         $response = $this->httpClient->get($redirect->url);
 
@@ -91,9 +102,13 @@ class IdentityClient
             return new AuthenticationRedirect($response->getHeader('Location')[0]);
         }
 
-        return null;
+        throw new Exception('Failed to start authorization');
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
     protected function getEmailForm(AuthenticationRedirect $redirect): AuthenticationForm
     {
         $response = $this->httpClient->get($redirect->url);
@@ -106,10 +121,15 @@ class IdentityClient
 
         $loginForm = $document->getElementById('emailPasswordForm');
 
+        if($loginForm === null) {
+            throw new Exception('Failed to find email form');
+        }
+
         $formTarget = $loginForm->getAttribute('action');
 
         $emailFormParameters = [];
 
+        /** @var DOMElement $childNode */
         foreach($loginForm->childNodes as $childNode) {
             if($childNode->nodeName !== 'input') {
                 continue;
@@ -121,7 +141,11 @@ class IdentityClient
         return new AuthenticationForm($formTarget, $emailFormParameters);
     }
 
-    protected function submitEmailForm(AuthenticationForm $form): ?AuthenticationRedirect
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    protected function submitEmailForm(AuthenticationForm $form): AuthenticationRedirect
     {
         $response = $this->httpClient->post(
             $form->targetUrl,
@@ -139,7 +163,7 @@ class IdentityClient
             return new AuthenticationRedirect($response->getHeader('Location')[0]);
         }
 
-        return null;
+        throw new Exception('Failed to submit email form');
     }
 
     protected function getPasswordForm(AuthenticationRedirect $redirect): AuthenticationForm
@@ -156,6 +180,10 @@ class IdentityClient
         $csrfToken = null;
 
         foreach($document->getElementsByTagName('script') as $node) {
+            if ($node->nodeValue === null) {
+                continue;
+            }
+
             if(! str_contains($node->nodeValue, 'window._IDK =')) {
                 continue;
             }
@@ -177,7 +205,11 @@ class IdentityClient
         ]);
     }
 
-    protected function submitPasswordForm(AuthenticationForm $form): ?AuthenticationRedirect
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    protected function submitPasswordForm(AuthenticationForm $form): AuthenticationRedirect
     {
         try {
             $this->httpClient->post(
@@ -199,12 +231,21 @@ class IdentityClient
             }
         }
 
-        return null;
+        throw new Exception('Failed to submit password form');
     }
 
+    /**
+     * @throws Exception
+     */
     protected function parseAppRedirect(AuthenticationRedirect $redirect): IdentityCredentials
     {
-        parse_str(parse_url($redirect->url, PHP_URL_FRAGMENT), $query_params);
+        $parameters = parse_url($redirect->url, PHP_URL_FRAGMENT);
+
+        if (!is_string($parameters)) {
+            throw new Exception('Invalid parameters');
+        }
+
+        parse_str($parameters, $query_params);
 
         return IdentityCredentials::fromArray($query_params);
     }

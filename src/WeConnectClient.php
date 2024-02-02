@@ -45,7 +45,7 @@ class WeConnectClient
         ]);
     }
 
-    public function login(IdentityCredentials $credentials): WeConnectCredentials
+    public function login(IdentityCredentials $credentials): ?WeConnectCredentials
     {
         $response = $this->httpClient->post(
             '/user-login/login/v1',
@@ -93,7 +93,7 @@ class WeConnectClient
         return $this;
     }
 
-    public function refreshCredentials(): WeConnectCredentials
+    public function refreshCredentials(): ?WeConnectCredentials
     {
         $response = $this->httpClient->get(
             '/user-login/refresh/v1',

@@ -16,7 +16,7 @@ use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
  */
 trait GetsVehicleStatus
 {
-    public function vehicleStatus(Vehicle|string $vehicle, ?array $domains = null)
+    public function vehicleStatus(Vehicle|string $vehicle, ?array $domains = null): array
     {
         if ($vehicle instanceof Vehicle) {
             $vehicle = $vehicle->vin;

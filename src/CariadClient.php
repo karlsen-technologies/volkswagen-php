@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace KarlsenTechnologies\Volkswagen;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
+use Exception;
 
 class CariadClient
 {
@@ -24,7 +26,11 @@ class CariadClient
         ]);
     }
 
-    public function getVWAuthenticationUrl(): ?AuthenticationRedirect
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public function getVWAuthenticationUrl(): AuthenticationRedirect
     {
         $rand64bit = strval(mt_rand() << 32 | mt_rand()) . strval(time());
 
@@ -43,7 +49,7 @@ class CariadClient
             return new AuthenticationRedirect($response->getHeader('Location')[0]);
         }
 
-        return null;
+        throw new Exception('Failed to get VW authentication URL');
     }
 
 }
