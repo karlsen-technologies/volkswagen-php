@@ -18,7 +18,11 @@ class Domain
         $statuses = [];
 
         foreach($data as $statusName => $statusData) {
-            $statuses[$statusName] = Status::fromApi($statusName, $statusData);
+            if(isset($statusData['error'])) {
+                $statuses[$statusName] = StatusError::fromApi($statusData);
+            } else {
+                $statuses[$statusName] = Status::fromApi($statusName, $statusData);
+            }
         }
 
         return new Domain(
@@ -33,7 +37,11 @@ class Domain
         $statuses = [];
 
         foreach($data['statuses'] as $statusName => $statusData) {
-            $statuses[$statusName] = Status::fromArray($statusData);
+            if(isset($statusData['error'])) {
+                $statuses[$statusName] = StatusError::fromArray($statusData);
+            } else {
+                $statuses[$statusName] = Status::fromArray($statusData);
+            }
         }
 
         return new Domain(
