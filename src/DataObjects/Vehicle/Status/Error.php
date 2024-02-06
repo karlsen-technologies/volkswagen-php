@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status;
 
-class StatusError
+class Error
 {
     public function __construct(
         public ?string $message,
@@ -15,7 +15,7 @@ class StatusError
         public ?bool $retry,
     ) {}
 
-    public static function fromApi(array $data): StatusError
+    public static function fromApi(array $data): Error
     {
         $values = $data['error'] ?? [];
 
@@ -26,7 +26,7 @@ class StatusError
         $group = $values['group'] ?? null;
         $retry = $values['retry'] ?? null;
 
-        return new StatusError(
+        return new Error(
             $message,
             $errorTimestamp,
             $info,
@@ -36,9 +36,9 @@ class StatusError
         );
     }
 
-    public static function fromArray(array $data): StatusError
+    public static function fromArray(array $data): Error
     {
-        return new StatusError(
+        return new Error(
             $data['message'],
             $data['error_timestamp'],
             $data['info'],

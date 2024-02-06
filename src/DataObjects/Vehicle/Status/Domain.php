@@ -20,7 +20,7 @@ class Domain
 
         foreach($data as $statusName => $statusData) {
             if(isset($statusData['error'])) {
-                $statuses[$statusName] = StatusError::fromApi($statusData);
+                $statuses[$statusName] = Error::fromApi($statusData);
             } else {
                 $statuses[$statusName] = Status::fromApi($statusName, $statusData);
             }
@@ -39,7 +39,7 @@ class Domain
 
         foreach($data['statuses'] as $statusName => $statusData) {
             if(isset($statusData['error'])) {
-                $statuses[$statusName] = StatusError::fromArray($statusData);
+                $statuses[$statusName] = Error::fromArray($statusData);
             } else {
                 $statuses[$statusName] = Status::fromArray($statusData);
             }

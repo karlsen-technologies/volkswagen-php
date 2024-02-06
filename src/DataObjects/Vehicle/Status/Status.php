@@ -23,7 +23,7 @@ class Status
         $requests = $data['requests'] ?? [];
 
         foreach ($requests as $key => $requestData) {
-            $requests[$key] = StatusRequest::fromApi($requestData);
+            $requests[$key] = Request::fromApi($requestData);
         }
 
         return new Status(
@@ -39,7 +39,7 @@ class Status
         $requests = [];
 
         foreach ($data['requests'] as $requestData) {
-            $requests[] = StatusRequest::fromArray($requestData);
+            $requests[] = Request::fromArray($requestData);
         }
 
         return new Status(
