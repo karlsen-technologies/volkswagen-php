@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen\Actions;
 
+use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
 
 /**
@@ -14,11 +15,14 @@ use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
  */
 trait ListsVehicles
 {
+    /**
+     * @throws GuzzleException
+     */
     public function vehicles(): array
     {
-        $response = $this->httpClient->get('/vehicle/v1/vehicles');
+        $response = $this->get('/vehicle/v1/vehicles');
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $data = json_decode($responseContents, true);
 

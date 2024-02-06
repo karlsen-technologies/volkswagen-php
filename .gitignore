@@ -19,3 +19,4 @@ _ide_helper_models.php
 _lighthouse_ide_helper.php
 auth.json
 phpunit.xml
+.phpactor.json

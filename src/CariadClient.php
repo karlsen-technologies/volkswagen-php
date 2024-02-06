@@ -4,52 +4,52 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
 use Exception;
 
-class CariadClient
+class CariadClient extends BaseClient
 {
-    public const BASE_URL = 'https://emea.bff.cariad.digital';
+    public string $baseUrl = 'https://emea.bff.cariad.digital';
 
-    protected Client $client;
+    protected array $headers = [
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json',
+    ];
 
     public function __construct()
     {
-        $this->client = new Client([
-            'base_uri' => self::BASE_URL,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ]);
+        parent::__construct();
     }
 
     /**
      * @throws GuzzleException
      * @throws Exception
      */
-    public function getVWAuthenticationUrl(): AuthenticationRedirect
+    public function getVWAuthenticationUrl(): string
     {
-        $rand64bit = strval(mt_rand() << 32 | mt_rand()) . strval(time());
+        $nonce = $this->generateNonce();
 
-        $response = $this->client->get(
+        $response = $this->get(
             '/user-login/v1/authorize',
             [
                 'query' => [
                     'redirect_uri' => 'weconnect://authenticated',
-                    'nonce' => $rand64bit,
+                    'nonce' => $nonce,
                 ],
                 'allow_redirects' => false,
             ]
         );
 
-        if ($response->getStatusCode() === 303) {
-            return new AuthenticationRedirect($response->getHeader('Location')[0]);
+        if ($response->statusCode === 303) {
+            return $response->header('Location')[0];
         }
 
         throw new Exception('Failed to get VW authentication URL');
+    }
+
+    private function generateNonce(): string
+    {
+        return strval(mt_rand() << 32 | mt_rand()) . strval(time());
     }
 
 }

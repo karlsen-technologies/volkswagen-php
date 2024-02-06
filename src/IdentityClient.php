@@ -6,24 +6,17 @@ namespace KarlsenTechnologies\Volkswagen;
 
 use DOMElement;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationForm;
-use KarlsenTechnologies\Volkswagen\DataObjects\Api\AuthenticationRedirect;
+use KarlsenTechnologies\Volkswagen\DataObjects\Http\Response;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
 use DOMDocument;
 use Exception;
 
-class IdentityClient
+class IdentityClient extends BaseClient
 {
-    protected CookieJar $cookieJar;
-
-    protected Client $httpClient;
-
     protected CariadClient $cariadClient;
-
-    protected string $baseUrl;
 
     protected array $headers = [
         'Content-Version' => '1',
@@ -33,22 +26,16 @@ class IdentityClient
         'Accept' => '*/*',
     ];
 
+    protected array $options = [
+        'allow_redirects' => false,
+    ];
+
     public function __construct(string $baseUrl = 'https://identity.vwgroup.io', array $headers = [], ?CariadClient $cariadClient = null)
     {
         $this->baseUrl = $baseUrl;
         $this->headers = array_merge($this->headers, $headers);
 
-        // We need to store cookies between requests to VW Identity.
-        // This is because we need to pretend to be the user and submit the login forms directly.
-        // VW Identity uses cookies to track the state of the login process.
-        $this->cookieJar = new CookieJar();
-
-        $this->httpClient = new Client([
-            'allow_redirects' => false,
-            'base_uri' => $this->baseUrl,
-            'cookies' => $this->cookieJar,
-            'headers' => $this->headers,
-        ]);
+        parent::__construct();
 
         $this->cariadClient = $cariadClient ?? new CariadClient();
     }
@@ -61,15 +48,15 @@ class IdentityClient
     {
         // We start by getting the authentication url from Cariad.
         // This is used as a simplification by the We Connect app to build the full url required for VW Identity.
-        $authenticationRedirect = $this->cariadClient->getVWAuthenticationUrl();
+        $authenticationRedirectUrl = $this->cariadClient->getVWAuthenticationUrl();
 
         // Start the authorization process with VW Identity. This will redirect us to the login page.
         // VW has split the login process into two steps, first we submit the email address, then we submit the password.
-        $emailFormRedirect = $this->startAuthorization($authenticationRedirect);
+        $emailFormRedirectUrl = $this->startAuthorization($authenticationRedirectUrl);
 
         // Send a request to the email form url to get the form parameters.
         // Because we are unable to the change the final redirect url, we need to pretend to be the user and directly submit the forms.
-        $emailForm = $this->getEmailForm($emailFormRedirect);
+        $emailForm = $this->getEmailForm($emailFormRedirectUrl);
 
         // Add the email address to the form parameters.
         $emailForm->parameters['email'] = $email;
@@ -94,12 +81,12 @@ class IdentityClient
      * @throws GuzzleException
      * @throws Exception
      */
-    protected function startAuthorization(AuthenticationRedirect $redirect): AuthenticationRedirect
+    protected function startAuthorization(string $redirectUrl): string
     {
-        $response = $this->httpClient->get($redirect->url);
+        $response = $this->get($redirectUrl);
 
-        if ($response->getStatusCode() === 302) {
-            return new AuthenticationRedirect($response->getHeader('Location')[0]);
+        if ($response->statusCode === 302) {
+            return $response->header('location')[0];
         }
 
         throw new Exception('Failed to start authorization');
@@ -109,11 +96,11 @@ class IdentityClient
      * @throws GuzzleException
      * @throws Exception
      */
-    protected function getEmailForm(AuthenticationRedirect $redirect): AuthenticationForm
+    protected function getEmailForm(string $redirectUrl): AuthenticationForm
     {
-        $response = $this->httpClient->get($redirect->url);
+        $response = $this->get($redirectUrl);
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $document = new DOMDocument();
 
@@ -145,13 +132,12 @@ class IdentityClient
      * @throws GuzzleException
      * @throws Exception
      */
-    protected function submitEmailForm(AuthenticationForm $form): AuthenticationRedirect
+    protected function submitEmailForm(AuthenticationForm $form): string
     {
-        $response = $this->httpClient->post(
+        $response = $this->post(
             $form->targetUrl,
             [
                 'form_params' => $form->parameters,
-                'http_errors' => false,
                 'headers' => [
                     'Content-Type' => 'application/x-www-form-urlencoded',
                     'Accept' => '*/*',
@@ -159,18 +145,18 @@ class IdentityClient
             ]
         );
 
-        if ($response->getStatusCode() === 303) {
-            return new AuthenticationRedirect($response->getHeader('Location')[0]);
+        if ($response->statusCode === 303) {
+            return $response->header('location')[0];
         }
 
         throw new Exception('Failed to submit email form');
     }
 
-    protected function getPasswordForm(AuthenticationRedirect $redirect): AuthenticationForm
+    protected function getPasswordForm(string $redirectUrl): AuthenticationForm
     {
-        $response = $this->httpClient->get($redirect->url);
+        $response = $this->get($redirectUrl);
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $document = new DOMDocument();
 
@@ -209,15 +195,16 @@ class IdentityClient
      * @throws GuzzleException
      * @throws Exception
      */
-    protected function submitPasswordForm(AuthenticationForm $form): AuthenticationRedirect
+    protected function submitPasswordForm(AuthenticationForm $form): string
     {
+        // We need to follow the redirects until we get the final redirect url for the app.
+        // The final redirect url uses a custom scheme, which will cause Guzzle to throw an exception that we need to catch.
         try {
-            $this->httpClient->post(
+            $this->post(
                 $form->targetUrl,
                 [
                     'form_params' => $form->parameters,
                     'allow_redirects' => true,
-                    'http_errors' => false,
                     'headers' => [
                         'Content-Type' => 'application/x-www-form-urlencoded',
                         'Accept' => '*/*',
@@ -225,9 +212,10 @@ class IdentityClient
                 ]
             );
         } catch (BadResponseException $e) {
-            // If the response in the exception was a "Found" redirect, we will extract the redirect url for further processing.
-            if ($e->getResponse()->getStatusCode() === 302) {
-                return new AuthenticationRedirect($e->getResponse()->getHeader('Location')[0]);
+            $response = Response::fromGuzzleResponse($e->getResponse());
+
+            if ($response->statusCode === 302) {
+                return $response->header('location')[0];
             }
         }
 
@@ -237,9 +225,9 @@ class IdentityClient
     /**
      * @throws Exception
      */
-    protected function parseAppRedirect(AuthenticationRedirect $redirect): IdentityCredentials
+    protected function parseAppRedirect(string $redirectUrl): IdentityCredentials
     {
-        $parameters = parse_url($redirect->url, PHP_URL_FRAGMENT);
+        $parameters = parse_url($redirectUrl, PHP_URL_FRAGMENT);
 
         if (!is_string($parameters)) {
             throw new Exception('Invalid parameters');

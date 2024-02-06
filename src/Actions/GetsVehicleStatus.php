@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen\Actions;
 
+use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status\Domain;
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
 use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
@@ -16,6 +17,9 @@ use KarlsenTechnologies\Volkswagen\Enums\Vehicle\StatusDomain;
  */
 trait GetsVehicleStatus
 {
+    /**
+     * @throws GuzzleException
+     */
     public function vehicleStatus(Vehicle|string $vehicle, ?array $domains = null): array
     {
         if ($vehicle instanceof Vehicle) {
@@ -32,9 +36,9 @@ trait GetsVehicleStatus
             $domains = StatusDomain::values();
         }
 
-        $response = $this->httpClient->get("/vehicle/v1/vehicles/{$vehicle}/selectivestatus?jobs=" . implode(',', $domains));
+        $response = $this->get("/vehicle/v1/vehicles/{$vehicle}/selectivestatus?jobs=" . implode(',', $domains));
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $data = json_decode($responseContents, true);
 

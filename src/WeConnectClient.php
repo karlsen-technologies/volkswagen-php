@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace KarlsenTechnologies\Volkswagen;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
 use KarlsenTechnologies\Volkswagen\DataObjects\WeConnectCredentials;
 
-class WeConnectClient
+class WeConnectClient extends BaseClient
 {
     use Actions\GetsVehicleStatus;
     use Actions\ListsVehicles;
 
     protected ?WeConnectCredentials $credentials;
-
-    protected Client $httpClient;
-
-    protected string $baseUrl;
 
     protected array $headers = [
         'Content-Version' => '1',
@@ -38,16 +34,15 @@ class WeConnectClient
         $this->baseUrl = $baseUrl;
         $this->headers = array_merge($this->headers, $headers);
 
-        $this->httpClient = new Client([
-            'allow_redirects' => false,
-            'base_uri' => $this->baseUrl,
-            'headers' => $this->headers,
-        ]);
+        parent::__construct();
     }
 
+    /**
+     * @throws GuzzleException
+     */
     public function login(IdentityCredentials $credentials): ?WeConnectCredentials
     {
-        $response = $this->httpClient->post(
+        $response = $this->post(
             '/user-login/login/v1',
             [
                 'json' => [
@@ -64,7 +59,7 @@ class WeConnectClient
             ]
         );
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $data = json_decode($responseContents, true);
 
@@ -84,18 +79,17 @@ class WeConnectClient
 
         $this->headers['Authorization'] = 'Bearer ' . $this->credentials->accessToken;
 
-        $this->httpClient = new Client([
-            'allow_redirects' => false,
-            'base_uri' => $this->baseUrl,
-            'headers' => $this->headers,
-        ]);
+        $this->refreshHttpClient();
 
         return $this;
     }
 
+    /**
+     * @throws GuzzleException
+     */
     public function refreshCredentials(): ?WeConnectCredentials
     {
-        $response = $this->httpClient->get(
+        $response = $this->get(
             '/user-login/refresh/v1',
             [
                 'headers' => array_merge($this->headers, [
@@ -104,7 +98,7 @@ class WeConnectClient
             ]
         );
 
-        $responseContents = $response->getBody()->getContents();
+        $responseContents = $response->body;
 
         $data = json_decode($responseContents, true);
 
