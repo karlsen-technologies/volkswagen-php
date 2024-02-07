@@ -9,6 +9,9 @@ use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\GuzzleException;
 use Exception;
 use KarlsenTechnologies\Volkswagen\DataObjects\Http\Response;
+use KarlsenTechnologies\Volkswagen\Exceptions\BadRequestException;
+use KarlsenTechnologies\Volkswagen\Exceptions\NotFoundException;
+use KarlsenTechnologies\Volkswagen\Exceptions\UnauthorizedException;
 use Psr\Http\Message\ResponseInterface;
 
 class BaseClient
@@ -47,8 +50,10 @@ class BaseClient
     }
 
     /**
+     * @throws UnauthorizedException
+     * @throws NotFoundException
+     * @throws BadRequestException
      * @throws GuzzleException
-     * @throws Exception
      */
     protected function request(string $verb, string $uri, array $options = []): Response
     {
@@ -64,15 +69,28 @@ class BaseClient
     }
 
     /**
-     * @throws Exception
+     * @throws BadRequestException
+     * @throws UnauthorizedException
+     * @throws NotFoundException
      */
     protected function handleRequestError(ResponseInterface $response): void
     {
-        throw new Exception((string) $response->getBody());
+        match($response->getStatusCode()) {
+            400 => throw new BadRequestException($response->getBody()->getContents()),
+            401 => throw new UnauthorizedException($response->getBody()->getContents()),
+            404 => throw new NotFoundException(),
+            default => throw new Exception((string) $response->getBody()),
+        };
     }
 
     /**
+     * @param string $uri
+     * @param array $options
+     * @return Response
+     * @throws BadRequestException
      * @throws GuzzleException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
      */
     public function get(string $uri, array $options = []): Response
     {
@@ -80,7 +98,13 @@ class BaseClient
     }
 
     /**
+     * @param string $uri
+     * @param array $options
+     * @return Response
+     * @throws BadRequestException
      * @throws GuzzleException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
      */
     public function post(string $uri, array $options = []): Response
     {
@@ -88,7 +112,13 @@ class BaseClient
     }
 
     /**
+     * @param string $uri
+     * @param array $options
+     * @return Response
+     * @throws BadRequestException
      * @throws GuzzleException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
      */
     public function put(string $uri, array $options = []): Response
     {
@@ -96,7 +126,13 @@ class BaseClient
     }
 
     /**
+     * @param string $uri
+     * @param array $options
+     * @return Response
+     * @throws BadRequestException
      * @throws GuzzleException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
      */
     public function delete(string $uri, array $options = []): Response
     {

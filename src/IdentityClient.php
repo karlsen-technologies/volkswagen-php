@@ -13,6 +13,14 @@ use KarlsenTechnologies\Volkswagen\DataObjects\Http\Response;
 use KarlsenTechnologies\Volkswagen\DataObjects\IdentityCredentials;
 use DOMDocument;
 use Exception;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\InvalidEmailException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\InvalidFormException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\InvalidPasswordException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\LoginThrottledException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\MissingParametersException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\StartAuthorizationException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\SubmitEmailException;
+use KarlsenTechnologies\Volkswagen\Exceptions\Identity\SubmitPasswordException;
 
 class IdentityClient extends BaseClient
 {
@@ -79,7 +87,7 @@ class IdentityClient extends BaseClient
 
     /**
      * @throws GuzzleException
-     * @throws Exception
+     * @throws StartAuthorizationException
      */
     protected function startAuthorization(string $redirectUrl): string
     {
@@ -89,12 +97,12 @@ class IdentityClient extends BaseClient
             return $response->header('location')[0];
         }
 
-        throw new Exception('Failed to start authorization');
+        throw new StartAuthorizationException();
     }
 
     /**
      * @throws GuzzleException
-     * @throws Exception
+     * @throws InvalidFormException
      */
     protected function getEmailForm(string $redirectUrl): AuthenticationForm
     {
@@ -104,12 +112,16 @@ class IdentityClient extends BaseClient
 
         $document = new DOMDocument();
 
+        $internalErrors = libxml_use_internal_errors(true);
+
         $document->loadHTML($responseContents);
+
+        libxml_use_internal_errors($internalErrors);
 
         $loginForm = $document->getElementById('emailPasswordForm');
 
         if($loginForm === null) {
-            throw new Exception('Failed to find email form');
+            throw new InvalidFormException('Failed to find email form');
         }
 
         $formTarget = $loginForm->getAttribute('action');
@@ -130,7 +142,7 @@ class IdentityClient extends BaseClient
 
     /**
      * @throws GuzzleException
-     * @throws Exception
+     * @throws SubmitEmailException
      */
     protected function submitEmailForm(AuthenticationForm $form): string
     {
@@ -149,9 +161,14 @@ class IdentityClient extends BaseClient
             return $response->header('location')[0];
         }
 
-        throw new Exception('Failed to submit email form');
+        throw new SubmitEmailException();
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws InvalidFormException
+     * @throws InvalidEmailException
+     */
     protected function getPasswordForm(string $redirectUrl): AuthenticationForm
     {
         $response = $this->get($redirectUrl);
@@ -160,7 +177,11 @@ class IdentityClient extends BaseClient
 
         $document = new DOMDocument();
 
+        $internalErrors = libxml_use_internal_errors(true);
+
         $document->loadHTML($responseContents);
+
+        libxml_use_internal_errors($internalErrors);
 
         $templateModel = null;
         $csrfToken = null;
@@ -183,6 +204,14 @@ class IdentityClient extends BaseClient
             unset($matches);
         }
 
+        if ($csrfToken === null || $templateModel === null) {
+            throw new InvalidFormException('Failed to find a valid password form in the response body');
+        }
+
+        if ($templateModel['template'] !== 'loginAuthenticate') {
+            throw new InvalidEmailException();
+        }
+
         return new AuthenticationForm($this->baseUrl . '/signin-service/v1/' . $templateModel['clientLegalEntityModel']['clientId'] . '/' . $templateModel['postAction'], [
             'relayState' => $templateModel['relayState'],
             '_csrf' => $csrfToken,
@@ -192,15 +221,17 @@ class IdentityClient extends BaseClient
     }
 
     /**
+     * @throws SubmitPasswordException
      * @throws GuzzleException
-     * @throws Exception
+     * @throws InvalidPasswordException
+     * @throws LoginThrottledException
      */
     protected function submitPasswordForm(AuthenticationForm $form): string
     {
         // We need to follow the redirects until we get the final redirect url for the app.
         // The final redirect url uses a custom scheme, which will cause Guzzle to throw an exception that we need to catch.
         try {
-            $this->post(
+            $response = $this->post(
                 $form->targetUrl,
                 [
                     'form_params' => $form->parameters,
@@ -219,21 +250,62 @@ class IdentityClient extends BaseClient
             }
         }
 
-        throw new Exception('Failed to submit password form');
+        // Something went wrong, so lets try to figure out what it was and throw a more specific exception.
+        if ($response->statusCode === 200) {
+            $responseContents = $response->body;
+
+            $document = new DOMDocument();
+
+            $internalErrors = libxml_use_internal_errors(true);
+
+            $document->loadHTML($responseContents);
+
+            libxml_use_internal_errors($internalErrors);
+
+            $templateModel = null;
+
+            foreach($document->getElementsByTagName('script') as $node) {
+                if ($node->nodeValue === null) {
+                    continue;
+                }
+
+                if(! str_contains($node->nodeValue, 'window._IDK =')) {
+                    continue;
+                }
+
+                preg_match('/(?<=templateModel: ).*(?=,)/', $node->nodeValue, $matches);
+                $templateModel = json_decode($matches[0], true);
+                unset($matches);
+            }
+
+            if ($templateModel !== null) {
+                match ($templateModel['error']) {
+                    'login.errors.password_invalid' => throw new InvalidPasswordException(),
+                    'login.errors.throttled' => throw new LoginThrottledException(),
+                    default => throw new SubmitPasswordException(),
+                };
+            }
+        }
+
+        throw new SubmitPasswordException();
     }
 
     /**
-     * @throws Exception
+     * @throws MissingParametersException
      */
     protected function parseAppRedirect(string $redirectUrl): IdentityCredentials
     {
         $parameters = parse_url($redirectUrl, PHP_URL_FRAGMENT);
 
         if (!is_string($parameters)) {
-            throw new Exception('Invalid parameters');
+            throw new MissingParametersException();
         }
 
         parse_str($parameters, $query_params);
+
+        if (empty($query_params)) {
+            throw new MissingParametersException();
+        }
 
         return IdentityCredentials::fromArray($query_params);
     }

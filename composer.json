@@ -20,7 +20,8 @@
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.0",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "require-dev": {
         "spatie/ray": "^1.39",
