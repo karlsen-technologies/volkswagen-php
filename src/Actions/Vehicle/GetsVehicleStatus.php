@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KarlsenTechnologies\Volkswagen\Actions;
+namespace KarlsenTechnologies\Volkswagen\Actions\Vehicle;
 
 use GuzzleHttp\Exception\GuzzleException;
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Status\Domain;

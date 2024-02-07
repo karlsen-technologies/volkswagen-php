@@ -11,7 +11,7 @@ class Request
         public string $operation,
         public array $body,
         public string $requestId,
-        public string $vcfRequestId,
+        public ?string $vcfRequestId,
     ) {}
 
     public static function fromApi(array $data): Request

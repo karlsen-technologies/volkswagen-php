@@ -10,8 +10,16 @@ use KarlsenTechnologies\Volkswagen\DataObjects\WeConnectCredentials;
 
 class WeConnectClient extends BaseClient
 {
-    use Actions\GetsVehicleStatus;
-    use Actions\ListsVehicles;
+    use Actions\Vehicle\GetsVehicleCapabilities;
+    use Actions\Vehicle\GetsVehicleParkingPosition;
+    use Actions\Vehicle\GetsVehiclePendingRequests;
+    use Actions\Vehicle\GetsVehicleStatus;
+    use Actions\Vehicle\ListsVehicles;
+    use Actions\Vehicle\ManagesVehicleCharging;
+    use Actions\Vehicle\ManagesVehicleClimatisation;
+    use Actions\Vehicle\ManagesVehicleWindowHeating;
+    use Actions\Vehicle\WakesUpVehicle;
+
 
     protected ?WeConnectCredentials $credentials;
 
