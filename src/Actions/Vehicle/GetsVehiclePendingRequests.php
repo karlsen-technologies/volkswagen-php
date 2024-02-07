@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KarlsenTechnologies\Volkswagen\Actions\Vehicle;
 
 use GuzzleHttp\Exception\GuzzleException;
+use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\PendingRequest;
 use KarlsenTechnologies\Volkswagen\DataObjects\Vehicle\Vehicle;
 
 /**
@@ -30,6 +31,12 @@ trait GetsVehiclePendingRequests
 
         $data = json_decode($responseContents, true) ?? [];
 
-        return $data;
+        $pendingRequests = [];
+
+        foreach ($data['data'] as $request) {
+            $pendingRequests[] = PendingRequest::fromApi($request);
+        }
+
+        return $pendingRequests;
     }
 }
