@@ -19,13 +19,18 @@ trait GetsVehicleParkingPosition
     /**
      * @throws GuzzleException
      */
-    public function vehicleParkingPosition(Vehicle|string $vehicle): ParkingPosition
+    public function vehicleParkingPosition(Vehicle|string $vehicle): ?ParkingPosition
     {
         if ($vehicle instanceof Vehicle) {
             $vehicle = $vehicle->vin;
         }
 
         $response = $this->get("/vehicle/v1/vehicles/{$vehicle}/parkingposition");
+
+        // If the vehicle is not parked, the API will return a 204 No Content response
+        if ($response->statusCode === 204) {
+            return null;
+        }
 
         $responseContents = $response->body;
 
