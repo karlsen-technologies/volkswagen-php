@@ -27,6 +27,10 @@ trait GetsVehiclePendingRequests
 
         $response = $this->get("/vehicle/v1/vehicles/{$vehicle}/pendingrequests");
 
+        if ($response->statusCode === 204) {
+            return [];
+        }
+
         $responseContents = $response->body;
 
         $data = json_decode($responseContents, true) ?? [];
