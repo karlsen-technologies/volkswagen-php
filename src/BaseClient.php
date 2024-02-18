@@ -22,7 +22,9 @@ class BaseClient
 
     protected array $headers = [];
 
-    protected array $options = [];
+    protected array $options = [
+        'http_errors' => false,
+    ];
 
     protected CookieJar $cookieJar;
 
